@@ -29,6 +29,10 @@ class Excel
     };
     Cell* current;
 	vector<vector<string>> grid;
-    int row_size, col_size;
-	int c_row, c_col;
+    int row_size, col_size;         //row and colomn size at runtime
+	int c_row, c_col;               //current row and current colomn
+    const int cellWidth = 10;       //width of each cell at console
+	const int cellHeight = 4;       //height of each cell at console
+
+
 };
