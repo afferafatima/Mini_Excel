@@ -3,6 +3,8 @@
 #include <string>
 #include <windows.h>
 #include <conio.h>
+#include <random>
+#include <ctime>
 using namespace std;
 struct Cordinate
 {
@@ -11,38 +13,46 @@ struct Cordinate
 };
 class Excel
 {
-    class Cell
-    {
-        friend class Excel;
-        string data;
-        Cell *up;
-        Cell *down;
-        Cell *left;
-        Cell *right;
+	class Cell
+	{
+		friend class Excel;
+		string data;
+		Cell *up;
+		Cell *down;
+		Cell *left;
+		Cell *right;
 
-    public:
-        Cell(string input = " ", Cell *l = nullptr, Cell *r = nullptr, Cell *u = nullptr, Cell *d = nullptr)
-        {
-            data = input;
-            left = l;
-            right = r;
-            up = u;
-            down = d;
-        }
-    };
+	public:
+		Cell(string input = " ", Cell *l = nullptr, Cell *r = nullptr, Cell *u = nullptr, Cell *d = nullptr)
+		{
 
-    Cell* current;	
-    Cell* head;
+			data = to_string(getRandomNumber());
+			left = l;
+			right = r;
+			up = u;
+			down = d;
+		}
+		// temporary function to initialize data  for each cell
+		int getRandomNumber()
+		{
+			srand(time(0)); // Seed the random number generator with the current time
+			return rand() % 10000;
+		}
+	};
+
+	Cell *current;
+	Cell *head;
 	vector<vector<string>> grid;
-    int rowSize, colSize;         //row and colomn size at runtime
-	int currentRow, currentCol;               //current row and current colomn
+	int rowSize, colSize;		// row and colomn size at runtime
+	int currentRow, currentCol; // current row and current colomn
 	/*for excel functions like sum,average*/
-	Cell* RangeStart;
-	Cordinate Range_start{};  
+	Cell *RangeStart;
+	Cordinate Range_start{};
 	Cordinate Range_end{};
 	/*to print cell on console*/
-    const int cellWidth = 10;       //width of each cell at console
-	const int cellHeight = 4;       //height of each cell at console
+	const int cellWidth = 10; // width of each cell at console
+	const int cellHeight = 4; // height of each cell at console
+	const int gapTop=7;
 
 	void color(int k)
 	{
@@ -55,15 +65,15 @@ class Excel
 	}
 
 	void gotoxy(int rpos, int cpos)
-{
-	COORD scrn;
-	HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
-	scrn.X = cpos;
-	scrn.Y = rpos;
-	SetConsoleCursorPosition(hOuput, scrn);
-}
-	
-	//print cell
+	{
+		COORD scrn;
+		HANDLE hOuput = GetStdHandle(STD_OUTPUT_HANDLE);
+		scrn.X = cpos;
+		scrn.Y = rpos;
+		SetConsoleCursorPosition(hOuput, scrn);
+	}
+
+	// print cell
 	void printCell(int row, int col, int colour)
 	{
 		color(colour);
@@ -99,22 +109,21 @@ class Excel
 			cout << c;
 		}
 
-		//Clear the center of the cell
-		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + cellWidth / 2);
+		// Clear the center of the cell
+		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + 1);
 		cout << "     ";
 	}
 
-	void printCellData(int row, int col, Cell* d, int colour)
+	void printCellData(int row, int col, Cell *d, int colour)
 	{
 		color(colour);
-		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + cellWidth / 2);
+		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + 1);
 		cout << d->data;
 	}
 
-
 	void printCol()
 	{
-		for (int ri = 0, ci = currentCol + 1; ri < rowSize; ri++)
+		for (int ri = 0, ci = colSize - 1; ri < rowSize; ri++)
 		{
 			printCell(ri, ci, 7);
 		}
@@ -122,25 +131,23 @@ class Excel
 
 	void printRow()
 	{
-		for (int ci = 0, ri = currentRow + 1; ci < colSize; ci++)
+		for (int ci = 0, ri = rowSize - 1; ci < colSize; ci++)
 		{
 			printCell(ri, ci, 7);
 		}
-
 	}
 
-
 public:
-class iterator
+	class iterator
 	{
-		Cell* t;
+		Cell *t;
 		friend class Excel;
 		iterator()
 		{
 			t = nullptr;
 		}
 
-		iterator(Cell* data)
+		iterator(Cell *data)
 		{
 			t = data;
 		}
@@ -183,11 +190,10 @@ class iterator
 			return (t != temp.t);
 		}
 
-		string& operator*()
+		string &operator*()
 		{
 			return t->data;
 		}
-
 	};
 
 	iterator Get_Head()
@@ -195,7 +201,7 @@ class iterator
 		return iterator(head);
 	}
 
-    Excel()
+	Excel()
 	{
 		head = nullptr;
 		current = nullptr;
@@ -212,29 +218,27 @@ class iterator
 		}
 
 		current = head;
-		cout<<cellWidth<<endl;
-		cout<<cellHeight<<endl;
-		getch();
 		printGrid();
+		printData();
 	}
-    Cell* newRow()
+	Cell *newRow()
 	{
-		Cell* temp = new Cell(); //cell at the start of the row i.e 0 index
-		Cell* curr = temp;
+		Cell *temp = new Cell(); // cell at the start of the row i.e 0 index
+		Cell *curr = temp;
 		for (int i = 0; i < colSize - 1; i++)
 		{
-			Cell* temp2 = new Cell();
+			Cell *temp2 = new Cell();
 			temp->right = temp2;
 			temp2->left = temp;
 			temp = temp2;
 		}
 		return curr;
 	}
-	//insert row below the row containing current cell 
-    void insertRowBelow()
+	// insert row below the row containing current cell
+	void insertRowBelow()
 	{
-		Cell* temp = newRow(); // Create a new row of column length
-		Cell* temp2 = current; // Store the current cell for navigation
+		Cell *temp = newRow(); // Create a new row of column length
+		Cell *temp2 = current; // Store the current cell for navigation
 
 		// Move to the leftmost side of the sheet
 		while (temp2->left != nullptr)
@@ -270,14 +274,13 @@ class iterator
 			}
 		}
 		rowSize++; // Increment the row count
-		
 	}
 
 	// Create a new row to insert above the row containing the current cell
 	void insertRowAbove()
 	{
-		Cell* temp = newRow();  // Create a new row of cells
-		Cell* temp2 = current;  // Store the current cell for navigation
+		Cell *temp = newRow(); // Create a new row of cells
+		Cell *temp2 = current; // Store the current cell for navigation
 
 		// Move to the leftmost side of the sheet
 		while (temp2->left != nullptr)
@@ -319,20 +322,20 @@ class iterator
 			}
 		}
 
-		rowSize++;  
-		printGrid();  // Update and display the grid
-		// Print_Data(); // print data
+		rowSize++;
+		printGrid(); // Update and display the grid
+					 // Print_Data(); // print data
 	}
-	//insert new colomn
-	Cell* newCol()
+	// insert new colomn
+	Cell *newCol()
 	{
-		Cell* temp = new Cell();//cell at the start of the colomn
-		Cell* curr = temp;
+		Cell *temp = new Cell(); // cell at the start of the colomn
+		Cell *curr = temp;
 
 		// Create and link new cells for the column
 		for (int i = 0; i < rowSize - 1; i++)
 		{
-			Cell* temp2 = new Cell();
+			Cell *temp2 = new Cell();
 			temp->down = temp2;
 			temp2->up = temp;
 
@@ -341,17 +344,17 @@ class iterator
 
 		return curr;
 	}
-	//insert colomn to the right of colomn containing currrent cell
+	// insert colomn to the right of colomn containing currrent cell
 	void insertColRight()
 	{
-		Cell* temp = newCol();
-		Cell* temp2 = current;
+		Cell *temp = newCol();
+		Cell *temp2 = current;
 		// Move to the rightmost side of the sheet
 		while (temp2->up != nullptr)
 		{
 			temp2 = temp2->up;
 		}
-		//if colomn is inserted right to the right most colomn
+		// if colomn is inserted right to the right most colomn
 		if (temp2->right == nullptr)
 		{
 			while (temp2 != nullptr)
@@ -363,7 +366,7 @@ class iterator
 				temp = temp->down;
 			}
 		}
-		else	
+		else
 		{
 			while (temp2 != nullptr)
 			{
@@ -378,14 +381,13 @@ class iterator
 		}
 
 		colSize++;
-
 	}
-	//insert colomn to the right of colomn containing currrent cell
+	// insert colomn to the right of colomn containing currrent cell
 	void insertColLeft()
 	{
 
-		Cell* temp = newCol();
-		Cell* temp2 = current;
+		Cell *temp = newCol();
+		Cell *temp2 = current;
 
 		// Move to the leftmost side of the sheet
 		while (temp2->up != nullptr)
@@ -397,7 +399,7 @@ class iterator
 		{
 			head = temp;
 		}
-		//if colomn is inserted left to left most colomn
+		// if colomn is inserted left to left most colomn
 		if (temp2->left == nullptr)
 		{
 			while (temp2 != nullptr)
@@ -409,7 +411,7 @@ class iterator
 				temp = temp->down;
 			}
 		}
-		else 
+		else
 		{
 			while (temp2 != nullptr)
 			{
@@ -424,20 +426,20 @@ class iterator
 		}
 
 		colSize++;
-		 printGrid();
+		printGrid();
 		// Print_Data();
 	}
-	//insert new cell in a row
+	// insert new cell in a row
 	void insertCellByDownShift()
 	{
-		Cell* temp = current;
+		Cell *temp = current;
 		while (current->down != nullptr)
 		{
 			current = current->down;
 		}
 		insertRowBelow();
 		current = current->down;
-		//move data
+		// move data
 		while (current != temp)
 		{
 			current->data = current->up->data;
@@ -445,10 +447,10 @@ class iterator
 		}
 		current->data = " ";
 	}
-	//insert new cell in a colomn
+	// insert new cell in a colomn
 	void insertCellByRightShift()
 	{
-		Cell* temp = current;
+		Cell *temp = current;
 		while (current->right != nullptr)
 		{
 			current = current->right;
@@ -463,22 +465,22 @@ class iterator
 		}
 		current->data = "   ";
 	}
-	//delete cell data as a row
+	// delete cell data as a row
 	void deleteCellByLeftShift()
 	{
-		Cell* temp = current;
+		Cell *temp = current;
 		temp->data = "    ";
-		while (temp->right!= nullptr)
+		while (temp->right != nullptr)
 		{
 			temp->data = temp->right->data;
 			temp = temp->right;
 		}
 		temp->data = "    ";
 	}
-	//delete cell data as a colom
+	// delete cell data as a colom
 	void deleteCellByUpShift()
 	{
-		Cell* temp = current;
+		Cell *temp = current;
 		temp->data = " ";
 		while (temp->down != nullptr)
 		{
@@ -487,26 +489,25 @@ class iterator
 		}
 		temp->data = " ";
 	}
-	//delete current colomn
+	// delete current colomn
 	void deleteCol()
 	{
-		if (colSize <= 1)//if only one colomn
+		if (colSize <= 1) // if only one colomn
 			return;
-		Cell* temp = current;
+		Cell *temp = current;
 
 		while (temp->up != nullptr)
 		{
 			temp = temp->up;
 		}
 
-
 		if (temp == head)
 		{
 			head = temp->right;
 		}
 
-		Cell* delete_cell;
-		//delete left most colomn
+		Cell *delete_cell;
+		// delete left most colomn
 		if (temp->left == nullptr)
 		{
 			current = current->right;
@@ -518,9 +519,8 @@ class iterator
 				temp = temp->down;
 				delete delete_cell;
 			}
-
 		}
-		//delete right most colomn
+		// delete right most colomn
 		else if (temp->right == nullptr)
 		{
 			currentCol--;
@@ -549,27 +549,26 @@ class iterator
 		}
 		colSize--;
 	}
-	//delete current row
+	// delete current row
 	void deleteRow()
 	{
 
 		if (rowSize <= 1)
 			return;
-		Cell* temp = current;
+		Cell *temp = current;
 
 		while (temp->left != nullptr)
 		{
 			temp = temp->left;
 		}
 
-
 		if (temp == head)
 		{
 			head = temp->down;
 		}
 
-		Cell* delete_cell;
-		//delete top most row
+		Cell *delete_cell;
+		// delete top most row
 		if (temp->up == nullptr)
 		{
 			current = current->down;
@@ -581,9 +580,8 @@ class iterator
 				temp = temp->right;
 				delete delete_cell;
 			}
-
 		}
-		//delete bottom row
+		// delete bottom row
 		else if (temp->down == nullptr)
 		{
 			currentRow--;
@@ -612,45 +610,42 @@ class iterator
 		}
 		rowSize--;
 	}
-	//clear colomn data
+	// clear colomn data
 	void clearCol()
 	{
-		Cell* temp = current;
-		//goto the top of the colomn to start
+		Cell *temp = current;
+		// goto the top of the colomn to start
 		while (temp->up != nullptr)
 		{
 			temp = temp->up;
 		}
-		//clear data
+		// clear data
 		while (temp != nullptr)
 		{
-			temp->data="    ";
+			temp->data = "    ";
 			temp = temp->down;
 		}
-
 	}
-	//clear row data
+	// clear row data
 	void clearRow()
 	{
-		Cell* temp = current;
-		//goto the left most side of row to start
+		Cell *temp = current;
+		// goto the left most side of row to start
 		while (temp->left != nullptr)
 		{
 			temp = temp->left;
 		}
-		//clear data
+		// clear data
 		while (temp != nullptr)
 		{
-			temp->data="    ";
+			temp->data = "    ";
 			temp = temp->right;
 		}
-
 	}
-	
+	//print cells of the grid
 	void printGrid()
 	{
-		printCell(0, 0, 7);
-		getch();
+
 		for (int ri = 0; ri < rowSize; ri++)
 		{
 			for (int ci = 0; ci < colSize; ci++)
@@ -659,64 +654,121 @@ class iterator
 			}
 		}
 	}
+	//print data of each cell
+	void printData()
+	{
+		Cell *temp = head;
+		for (int ri = 0; ri < rowSize; ri++)
+		{
+			Cell *temp2 = temp;
+			for (int ci = 0; ci < colSize; ci++)
+			{
+				printCellData(ri, ci, temp, 7);
+				temp = temp->right;
+			}
 
+			temp = temp2->down;
+		}
+	}
 	void Keyboard()
 	{
 		printCell(currentRow, currentCol, 4);
-		Cell* temp = current;
-		string input;
 		while (true)
 		{
 			Sleep(100);
-			if(GetAsyncKeyState(VK_LEFT))
+			if (GetAsyncKeyState(VK_LEFT) && (currentCol - 1) >= 0) // shift current cell to left
 			{
-				if((currentCol-1)>=0)
-				{
-					current=current->left;
-					printCell(currentRow,currentCol,7);
-					currentCol--;
-					printCell(currentRow,currentCol,4);
-				}
-
+				printCell(currentRow, currentCol, 7);
+				printCellData(currentRow, currentCol, current, 7);
+				current = current->left;
+				currentCol--;
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
 			}
-			if(GetAsyncKeyState(VK_RIGHT))
+			else if (GetAsyncKeyState(VK_RIGHT) && (currentCol + 1) < colSize) // shift current cell to right
 			{
-				if((currentCol+1)<colSize)
-				{
-					current=current->right;
-					printCell(currentRow,currentCol,7);
-					currentCol++;
-					printCell(currentRow,currentCol,4);
-				}
-
+				printCell(currentRow, currentCol, 7);
+				printCellData(currentRow, currentCol, current, 7);
+				current = current->right;
+				currentCol++;
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
 			}
-			if(GetAsyncKeyState(VK_UP))
+			else if (GetAsyncKeyState(VK_UP) && (currentRow - 1) >= 0) // shift current cell to up
 			{
-				if((currentRow-1)>=0)
-				{
-					current=current->up;
-					printCell(currentRow,currentCol,7);
-					currentRow--;
-					printCell(currentRow,currentCol,4);
-				}
 
+				printCell(currentRow, currentCol, 7);
+				printCellData(currentRow, currentCol, current, 7);
+				current = current->up;
+				currentRow--;
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
 			}
-			if(GetAsyncKeyState(VK_DOWN))
+			else if (GetAsyncKeyState(VK_DOWN) && (currentRow + 1) < rowSize) // shift current cell to down
 			{
-				if((currentRow+1)<rowSize)
-				{
-					current=current->down;
-					printCell(currentRow,currentCol,7);
-					currentRow++;
-					printCell(currentRow,currentCol,4);
-				}
 
+				printCell(currentRow, currentCol, 7);
+				printCellData(currentRow, currentCol, current, 7);
+				current = current->down;
+				currentRow++;
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
+			}
+			char c = _getch();
+			if (c == 100 || c == 68) // right(d or D )
+			{
+
+				insertColRight();
+
+				currentCol++;
+				current = current->right;
+
+				printCol();
+				printData();
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
+			}
+			else if (c == 97 || c == 65) // left(a or A)
+			{
+				insertColLeft();
+
+				currentCol--;
+				current = current->left;
+
+				printCol();
+				printData();
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
+			}
+			else if (c == 115 || c == 83) // down(s or S)
+			{
+
+				insertRowBelow();
+
+				currentRow++;
+				current = current->down;
+
+				printRow();
+				printData();
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
+			}
+			else if (c == 119 || c == 87) // up(w or W)
+			{
+
+				insertRowAbove();
+
+				currentRow--;
+				current = current->up;
+
+				printRow();
+				printData();
+				printCell(currentRow, currentCol, 4);
+				printCellData(currentRow, currentCol, current, 6);
 			}
 			
 		}
-
 	}
-
 };
 int main()
 {
