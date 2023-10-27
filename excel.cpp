@@ -52,7 +52,7 @@ class Excel
 	/*to print cell on console*/
 	const int cellWidth = 10; // width of each cell at console
 	const int cellHeight = 4; // height of each cell at console
-	const int gapTop=7;
+	const int gapTop = 7;
 
 	void color(int k)
 	{
@@ -120,7 +120,35 @@ class Excel
 		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + 1);
 		cout << d->data;
 	}
-
+	// entered value is numeric or not
+	bool intCheck(string numeric)
+	{
+		for (char c : numeric)
+		{
+			if (!isdigit(c))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+	bool validLength(string data)
+	{
+		return data.length() < 8;
+	}
+	bool inputCellData(int row, int col, Cell *d, int colour)
+	{
+		string data = "";
+		color(colour);
+		gotoxy((cellHeight * row) + cellHeight / 2, (col * cellWidth) + 1);
+		cin >> data;
+		if (intCheck(data) && validLength(data))
+		{
+			d->data = data;
+			return true;
+		}
+		return false;
+	}
 	void printCol()
 	{
 		for (int ri = 0, ci = colSize - 1; ri < rowSize; ri++)
@@ -341,7 +369,6 @@ public:
 
 			temp = temp2;
 		}
-
 		return curr;
 	}
 	// insert colomn to the right of colomn containing currrent cell
@@ -642,7 +669,7 @@ public:
 			temp = temp->right;
 		}
 	}
-	//print cells of the grid
+	// print cells of the grid
 	void printGrid()
 	{
 
@@ -654,7 +681,7 @@ public:
 			}
 		}
 	}
-	//print data of each cell
+	// print data of each cell
 	void printData()
 	{
 		Cell *temp = head;
@@ -670,6 +697,115 @@ public:
 			temp = temp2->down;
 		}
 	}
+	// insert functions in excel call when I pressed
+	void insertFunctionsOfExcel()
+	{
+		char c = _getch();
+		if (c == 100 || c == 68) // insert colomn right(d or D )
+		{
+
+			insertColRight();
+
+			currentCol++;
+			current = current->right;
+
+			printCol();
+			printData();
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (c == 97 || c == 65) // insert colomn left(a or A)
+		{
+			insertColLeft();
+
+			currentCol--;
+			current = current->left;
+
+			printCol();
+			printData();
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (c == 115 || c == 83) // insert row down(s or S)
+		{
+
+			insertRowBelow();
+
+			currentRow++;
+			current = current->down;
+
+			printRow();
+			printData();
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (c == 119 || c == 87) // insert row up(w or W)
+		{
+
+			insertRowAbove();
+
+			currentRow--;
+			current = current->up;
+
+			printRow();
+			printData();
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (c == 82 || c == 114) // insert cell by right shift(r or R)
+		{
+			insertCellByRightShift();
+			printGrid();
+			printData();
+		}
+		else if (c == 67 || c == 99) // insert cell by down shift(c or C)
+		{
+			insertCellByDownShift();
+			printGrid();
+			printData();
+		}
+		else if (c == 86 || c == 118)//insert cell data (I or i)
+		{
+			inputCellData(currentRow,currentCol,current,6);
+			printGrid();
+			printData();
+		}
+	}
+	// insert functions in excel call when D pressed
+	void deleteFunctionsOfExcel()
+	{
+		char c=_getch();
+		if(c==117||c==85)//delete cell by up shift(U  or u)
+		{
+			deleteCellByUpShift();
+			system("cls");
+			printGrid();
+			printData();
+		}
+		else if(c==108||c==76)//delete cell by left shift(L  or l)
+		{
+			deleteCellByLeftShift();
+			system("cls");
+			printGrid();
+			printData();
+		}
+		else if (c == 82 || c == 114) // delete row(r or R)
+		{
+			deleteRow();
+			system("cls");
+			printGrid();
+			printData();
+		}
+		else if (c == 67 || c == 99) // delete col(c or C)
+		{
+			deleteCol();
+			system("cls");
+			printGrid();
+			printData();
+		}
+
+	}
+
 	void Keyboard()
 	{
 		printCell(currentRow, currentCol, 4);
@@ -715,58 +851,14 @@ public:
 				printCellData(currentRow, currentCol, current, 6);
 			}
 			char c = _getch();
-			if (c == 100 || c == 68) // right(d or D )
+			if (c == 73 || c == 105) // insert function call(I or i)
 			{
-
-				insertColRight();
-
-				currentCol++;
-				current = current->right;
-
-				printCol();
-				printData();
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
+				insertFunctionsOfExcel();
 			}
-			else if (c == 97 || c == 65) // left(a or A)
+			else if (c == 100 || c == 68) // delete function call(D or d)
 			{
-				insertColLeft();
-
-				currentCol--;
-				current = current->left;
-
-				printCol();
-				printData();
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
+				deleteFunctionsOfExcel();
 			}
-			else if (c == 115 || c == 83) // down(s or S)
-			{
-
-				insertRowBelow();
-
-				currentRow++;
-				current = current->down;
-
-				printRow();
-				printData();
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
-			else if (c == 119 || c == 87) // up(w or W)
-			{
-
-				insertRowAbove();
-
-				currentRow--;
-				current = current->up;
-
-				printRow();
-				printData();
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
-			
 		}
 	}
 };
