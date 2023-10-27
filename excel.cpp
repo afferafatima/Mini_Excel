@@ -669,6 +669,11 @@ public:
 			temp = temp->right;
 		}
 	}
+	//clear cell data
+	void clearCell()
+	{
+		current->data="     ";
+	}
 	// print cells of the grid
 	void printGrid()
 	{
@@ -806,6 +811,27 @@ public:
 
 	}
 
+	void clearData()
+	{
+		char c=_getch();
+		if (c == 82 || c == 114) // clear row(r or R)
+		{
+			clearRow();
+			printData();
+		}
+		else if (c == 67 || c == 99) // clear col(c or C)
+		{
+			clearCol();
+			printData();
+		}
+		else if (c == 100 || c == 68) // clear cell data(d or D )
+		{
+			clearCell();
+			printData();
+		}
+		
+	}
+
 	void Keyboard()
 	{
 		printCell(currentRow, currentCol, 4);
@@ -858,6 +884,10 @@ public:
 			else if (c == 100 || c == 68) // delete function call(D or d)
 			{
 				deleteFunctionsOfExcel();
+			}
+			else if (c == 67 || c == 99) // clear data of row/colomn/cell(c or C)
+			{
+				clearData();
 			}
 		}
 	}
