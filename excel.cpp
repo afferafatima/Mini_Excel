@@ -5,12 +5,15 @@
 #include <conio.h>
 #include <random>
 #include <ctime>
+
 using namespace std;
+
 struct Cordinate
 {
 	int row = 0;
 	int col = 0;
 };
+
 class Excel
 {
 	class Cell
@@ -46,13 +49,12 @@ class Excel
 	int rowSize, colSize;		// row and colomn size at runtime
 	int currentRow, currentCol; // current row and current colomn
 	/*for excel functions like sum,average*/
-	Cell *RangeStart;
-	Cordinate Range_start{};
-	Cordinate Range_end{};
+	Cell *rangeStart;
+	Cordinate range_start{};
+	Cordinate range_end{};
 	/*to print cell on console*/
 	const int cellWidth = 10; // width of each cell at console
 	const int cellHeight = 4; // height of each cell at console
-	const int gapTop = 7;
 
 	void color(int k)
 	{
@@ -132,10 +134,12 @@ class Excel
 		}
 		return true;
 	}
+
 	bool validLength(string data)
 	{
 		return data.length() < 8;
 	}
+
 	bool inputCellData(int row, int col, Cell *d, int colour)
 	{
 		string data = "";
@@ -669,10 +673,10 @@ public:
 			temp = temp->right;
 		}
 	}
-	//clear cell data
+	// clear cell data
 	void clearCell()
 	{
-		current->data="     ";
+		current->data = "     ";
 	}
 	// print cells of the grid
 	void printGrid()
@@ -769,9 +773,9 @@ public:
 			printGrid();
 			printData();
 		}
-		else if (c == 86 || c == 118)//insert cell data (I or i)
+		else if (c == 86 || c == 118) // insert cell data (I or i)
 		{
-			inputCellData(currentRow,currentCol,current,6);
+			inputCellData(currentRow, currentCol, current, 6);
 			printGrid();
 			printData();
 		}
@@ -779,15 +783,15 @@ public:
 	// insert functions in excel call when D pressed
 	void deleteFunctionsOfExcel()
 	{
-		char c=_getch();
-		if(c==117||c==85)//delete cell by up shift(U  or u)
+		char c = _getch();
+		if (c == 117 || c == 85) // delete cell by up shift(U  or u)
 		{
 			deleteCellByUpShift();
 			system("cls");
 			printGrid();
 			printData();
 		}
-		else if(c==108||c==76)//delete cell by left shift(L  or l)
+		else if (c == 108 || c == 76) // delete cell by left shift(L  or l)
 		{
 			deleteCellByLeftShift();
 			system("cls");
@@ -808,12 +812,11 @@ public:
 			printGrid();
 			printData();
 		}
-
 	}
-
+	// clear data of row/colomn/cell
 	void clearData()
 	{
-		char c=_getch();
+		char c = _getch();
 		if (c == 82 || c == 114) // clear row(r or R)
 		{
 			clearRow();
@@ -829,7 +832,70 @@ public:
 			clearCell();
 			printData();
 		}
-		
+	}
+
+	// select cells for calculation
+	void selectRange()
+	{
+		Cell *temp = current;
+		int max_col = currentCol, max_row = currentRow, min_col = currentCol, min_row = currentRow;
+		while (true)
+		{
+			char c = _getch();
+			if (c == 100) // right(d) and right key
+			{
+				if (current->right != nullptr)
+				{
+					current = current->right;
+					currentCol++;
+					printCell(currentRow, currentCol, 4);
+				}
+			}
+			else if (c == 97) // left(a) and left key
+			{
+				if (current->left != nullptr)
+				{
+					current = current->left;
+					currentCol--;
+					printCell(currentRow, currentCol, 4);
+				}
+			}
+			else if (c == 115) // down(s) and down key
+			{
+				if (current->down != nullptr)
+				{
+					current = current->down;
+					currentRow++;
+					printCell(currentRow, currentCol, 4);
+				}
+			}
+			else if (c == 119) // up(w) and up key
+			{
+				if (current->up != nullptr)
+				{
+					current = current->up;
+					currentRow--;
+					printCell(currentRow, currentCol, 4);
+				}
+			}
+			else if (c == 99) // calculate(c)
+				break;
+			// update at each loop
+			if (currentCol > max_col)
+				max_col = currentCol;
+			if (currentRow > max_row)
+				max_row = currentRow;
+			if (currentCol < min_col)
+				min_col = currentCol;
+			if (currentRow < min_row)
+				min_row = currentRow;
+
+			
+		}
+		range_end.col = max_col;
+		range_end.row = max_row;
+		range_start.col = min_col;
+		range_start.row = min_row;
 	}
 
 	void Keyboard()
@@ -840,7 +906,7 @@ public:
 			Sleep(100);
 			if (GetAsyncKeyState(VK_LEFT) && (currentCol - 1) >= 0) // shift current cell to left
 			{
-				printCell(currentRow, currentCol, 7);
+				printCell(currentRow, currentCol, 7); //	unhighlight
 				printCellData(currentRow, currentCol, current, 7);
 				current = current->left;
 				currentCol--;
@@ -888,6 +954,10 @@ public:
 			else if (c == 67 || c == 99) // clear data of row/colomn/cell(c or C)
 			{
 				clearData();
+			}
+			else if (c == 13) // enter key
+			{
+				selectRange();
 			}
 		}
 	}
