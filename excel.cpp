@@ -837,45 +837,41 @@ public:
 	// select cells for calculation
 	void selectRange()
 	{
-		Cell *temp = current;
+		rangeStart = current;
 		int max_col = currentCol, max_row = currentRow, min_col = currentCol, min_row = currentRow;
 		while (true)
 		{
 			char c = _getch();
-			if (c == 100) // right(d) and right key
+			if (c == 100) // right(d)
 			{
 				if (current->right != nullptr)
 				{
 					current = current->right;
 					currentCol++;
-					printCell(currentRow, currentCol, 4);
 				}
 			}
-			else if (c == 97) // left(a) and left key
+			else if (c == 97) // left(a)
 			{
 				if (current->left != nullptr)
 				{
 					current = current->left;
 					currentCol--;
-					printCell(currentRow, currentCol, 4);
 				}
 			}
-			else if (c == 115) // down(s) and down key
+			else if (c == 115) // down(s)
 			{
 				if (current->down != nullptr)
 				{
 					current = current->down;
 					currentRow++;
-					printCell(currentRow, currentCol, 4);
 				}
 			}
-			else if (c == 119) // up(w) and up key
+			else if (c == 119) // up(w)
 			{
 				if (current->up != nullptr)
 				{
 					current = current->up;
 					currentRow--;
-					printCell(currentRow, currentCol, 4);
 				}
 			}
 			else if (c == 99) // calculate(c)
@@ -889,15 +885,96 @@ public:
 				min_col = currentCol;
 			if (currentRow < min_row)
 				min_row = currentRow;
-
-			
 		}
 		range_end.col = max_col;
 		range_end.row = max_row;
 		range_start.col = min_col;
 		range_start.row = min_row;
 	}
+	// calculate sum
+	int getRangeSum()
+	{
+		Cell *temp = rangeStart;
+		int sum = 0;
+		int sri = currentRow;
+		int sci = currentCol;
 
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+
+			Cell *temp2 = temp;
+
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				if (intCheck(temp->data))
+				{
+
+					sum = sum + stoi(temp->data);
+				}
+				temp = temp->right;
+			}
+			temp = temp2->down;
+		}
+		currentRow = sri;
+		currentCol = sci;
+		return sum;
+		
+	}
+	int getRangeAverage()
+	{
+		Cell *temp = rangeStart;
+		int average = 0;
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+
+			Cell *temp2 = temp;
+
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				if (intCheck(temp->data))
+				{
+
+					average = average + stoi(temp->data);
+				}
+				temp = temp->right;
+			}
+			temp = temp2->down;
+		}
+		currentRow = sri;
+		currentCol = sci;
+		return (average / (row_limit * col_limit));
+		
+	}
+	
+	void mathematicalOperations()
+	{
+		int value = 0;
+		char c = _getch();
+		if (c == 115 || c == 83) // sum(s or S)
+		{
+			value=getRangeSum();
+		}
+		else if (c == 97 || c == 65) // average(a or A)
+		{
+			value=getRangeAverage();
+		}
+
+		else{
+			return;
+		}
+		current->data = to_string(value);
+		printCell(currentRow, currentCol, 4);
+		printCellData(currentRow, currentCol, current, 6);
+	}
 	void Keyboard()
 	{
 		printCell(currentRow, currentCol, 4);
@@ -958,6 +1035,8 @@ public:
 			else if (c == 13) // enter key
 			{
 				selectRange();
+
+				getRangeSum();
 			}
 		}
 	}
