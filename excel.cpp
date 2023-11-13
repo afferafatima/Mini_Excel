@@ -838,6 +838,8 @@ public:
 	void selectRange()
 	{
 		rangeStart = current;
+		printCell(currentRow, currentCol, 7);
+		printCellData(currentRow, currentCol, current, 7);
 		int max_col = currentCol, max_row = currentRow, min_col = currentCol, min_row = currentRow;
 		while (true)
 		{
@@ -921,7 +923,6 @@ public:
 		currentRow = sri;
 		currentCol = sci;
 		return sum;
-		
 	}
 	int getRangeAverage()
 	{
@@ -952,24 +953,119 @@ public:
 		currentRow = sri;
 		currentCol = sci;
 		return (average / (row_limit * col_limit));
-		
 	}
-	
+	int getRangeMinimum()
+	{
+		Cell *temp = rangeStart;
+		int minimum = 2000000;
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+
+			Cell *temp2 = temp;
+
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				if (stoi(temp->data) < minimum)
+				{
+
+					minimum = stoi(temp->data);
+				}
+				temp = temp->right;
+			}
+			temp = temp2->down;
+		}
+		currentRow = sri;
+		currentCol = sci;
+		return minimum;
+	}
+	int getRangeMaximum()
+	{
+		Cell *temp = rangeStart;
+		int maximum = -2000000;
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+
+			Cell *temp2 = temp;
+
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				if (stoi(temp->data) > maximum)
+				{
+
+					maximum = stoi(temp->data);
+				}
+				temp = temp->right;
+			}
+			temp = temp2->down;
+		}
+		currentRow = sri;
+		currentCol = sci;
+		return maximum;
+	}
+	int getRangeCount()
+	{
+		Cell *temp = rangeStart;
+		int count = 0;
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+		if(row_limit==0)
+			return col_limit+1;
+		else if(col_limit==0)
+			return row_limit+1;
+		else
+			return row_limit * col_limit;
+	}
 	void mathematicalOperations()
 	{
 		int value = 0;
-		char c = _getch();
+		char c = getch();
 		if (c == 115 || c == 83) // sum(s or S)
 		{
-			value=getRangeSum();
+			value = getRangeSum();
 		}
 		else if (c == 97 || c == 65) // average(a or A)
 		{
-			value=getRangeAverage();
+			value = getRangeAverage();
 		}
-
-		else{
+		else if (c == 77 || c == 109) // maximum number(m or M)
+		{
+			value = getRangeMaximum();
+		}
+		else if (c == 78 || c == 110) // minimum number(n or N)
+		{
+			value = getRangeMinimum();
+		}
+		else if (c == 67 || c == 99) // count(c or c)
+		{
+			value = getRangeCount();
+		}
+		else
+		{
 			return;
+		}
+		while(true)
+		{
+			cellMovement();
+			char c = _getch();
+			if (c == 13)//enter key
+				break;
+			else if(c==27)//escape key
+				return;
 		}
 		current->data = to_string(value);
 		printCell(currentRow, currentCol, 4);
@@ -981,44 +1077,7 @@ public:
 		while (true)
 		{
 			Sleep(100);
-			if (GetAsyncKeyState(VK_LEFT) && (currentCol - 1) >= 0) // shift current cell to left
-			{
-				printCell(currentRow, currentCol, 7); //	unhighlight
-				printCellData(currentRow, currentCol, current, 7);
-				current = current->left;
-				currentCol--;
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
-			else if (GetAsyncKeyState(VK_RIGHT) && (currentCol + 1) < colSize) // shift current cell to right
-			{
-				printCell(currentRow, currentCol, 7);
-				printCellData(currentRow, currentCol, current, 7);
-				current = current->right;
-				currentCol++;
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
-			else if (GetAsyncKeyState(VK_UP) && (currentRow - 1) >= 0) // shift current cell to up
-			{
-
-				printCell(currentRow, currentCol, 7);
-				printCellData(currentRow, currentCol, current, 7);
-				current = current->up;
-				currentRow--;
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
-			else if (GetAsyncKeyState(VK_DOWN) && (currentRow + 1) < rowSize) // shift current cell to down
-			{
-
-				printCell(currentRow, currentCol, 7);
-				printCellData(currentRow, currentCol, current, 7);
-				current = current->down;
-				currentRow++;
-				printCell(currentRow, currentCol, 4);
-				printCellData(currentRow, currentCol, current, 6);
-			}
+			cellMovement();
 			char c = _getch();
 			if (c == 73 || c == 105) // insert function call(I or i)
 			{
@@ -1036,8 +1095,49 @@ public:
 			{
 				selectRange();
 
-				getRangeSum();
+				mathematicalOperations();
 			}
+		}
+	}
+	void cellMovement()
+	{
+		if (GetAsyncKeyState(VK_LEFT) && (currentCol - 1) >= 0) // shift current cell to left
+		{
+			printCell(currentRow, currentCol, 7); //	unhighlight
+			printCellData(currentRow, currentCol, current, 7);
+			current = current->left;
+			currentCol--;
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (GetAsyncKeyState(VK_RIGHT) && (currentCol + 1) < colSize) // shift current cell to right
+		{
+			printCell(currentRow, currentCol, 7);
+			printCellData(currentRow, currentCol, current, 7);
+			current = current->right;
+			currentCol++;
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (GetAsyncKeyState(VK_UP) && (currentRow - 1) >= 0) // shift current cell to up
+		{
+
+			printCell(currentRow, currentCol, 7);
+			printCellData(currentRow, currentCol, current, 7);
+			current = current->up;
+			currentRow--;
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
+		}
+		else if (GetAsyncKeyState(VK_DOWN) && (currentRow + 1) < rowSize) // shift current cell to down
+		{
+
+			printCell(currentRow, currentCol, 7);
+			printCellData(currentRow, currentCol, current, 7);
+			current = current->down;
+			currentRow++;
+			printCell(currentRow, currentCol, 4);
+			printCellData(currentRow, currentCol, current, 6);
 		}
 	}
 };
