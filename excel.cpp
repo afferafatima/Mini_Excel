@@ -5,6 +5,7 @@
 #include <conio.h>
 #include <random>
 #include <ctime>
+#include <fstream>
 
 using namespace std;
 
@@ -39,7 +40,7 @@ class Excel
 		int getRandomNumber()
 		{
 			srand(time(0)); // Seed the random number generator with the current time
-			return rand() % 10000;
+			return rand() % 100;
 		}
 	};
 
@@ -55,6 +56,7 @@ class Excel
 	/*to print cell on console*/
 	const int cellWidth = 10; // width of each cell at console
 	const int cellHeight = 4; // height of each cell at console
+	string filename = " ";
 
 	void color(int k)
 	{
@@ -876,7 +878,7 @@ public:
 					currentRow--;
 				}
 			}
-			else if (c == 99) // calculate(c)
+			else if (c == 13) // enter key
 				break;
 			// update at each loop
 			if (currentCol > max_col)
@@ -1023,10 +1025,10 @@ public:
 
 		int row_limit = range_end.row - range_start.row;
 		int col_limit = range_end.col - range_start.col;
-		if(row_limit==0)
-			return col_limit+1;
-		else if(col_limit==0)
-			return row_limit+1;
+		if (row_limit == 0)
+			return col_limit + 1;
+		else if (col_limit == 0)
+			return row_limit + 1;
 		else
 			return row_limit * col_limit;
 	}
@@ -1058,19 +1060,198 @@ public:
 		{
 			return;
 		}
-		while(true)
+		while (true)
 		{
 			cellMovement();
 			char c = _getch();
-			if (c == 13)//enter key
+			if (c == 13) // enter key
 				break;
-			else if(c==27)//escape key
+			else if (c == 27) // escape key
 				return;
 		}
 		current->data = to_string(value);
 		printCell(currentRow, currentCol, 4);
 		printCellData(currentRow, currentCol, current, 6);
 	}
+	void Copy()
+	{
+		Cell *temp = rangeStart;
+		grid.clear();
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+			vector<string> clip;
+			Cell *temp2 = temp;
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				clip.push_back(temp->data);
+				temp = temp->right;
+			}
+
+			grid.push_back(clip);
+			temp = temp2->down;
+		}
+
+		currentRow = sri;
+		currentCol = sci;
+	}
+
+	void Cut()
+	{
+		Cell *temp = rangeStart;
+		grid.clear();
+		int sri = currentRow;
+		int sci = currentCol;
+
+		int row_limit = range_end.row - range_start.row;
+		int col_limit = range_end.col - range_start.col;
+
+		for (int ri = 0; ri <= row_limit; ri++)
+		{
+			vector<string> clip;
+			Cell *temp2 = temp;
+			for (int ci = 0; ci <= col_limit; ci++)
+			{
+				clip.push_back(temp->data);
+				temp->data = "        ";
+				temp = temp->right;
+				printCellData(currentRow, currentCol, current, 6);
+			}
+
+			grid.push_back(clip);
+			temp = temp2->down;
+		}
+
+		currentRow = sri;
+		currentCol = sci;
+	}
+	void Paste()
+	{
+		Cell *temp = current;
+		for (int ri = 0; ri < grid.size(); ri++)
+		{
+			Cell *temp2 = current;
+			for (int ci = 0; ci < grid[0].size(); ci++)
+			{
+				current->data = grid[ri][ci];
+				printCellData(currentRow, currentCol, current, 6);
+				if (current->right == nullptr)
+					insertColRight();
+				printCol();
+				current = current->right;
+			}
+
+			if (temp2->down == nullptr)
+				insertRowBelow();
+			printRow();
+
+			current = temp2->down;
+		}
+
+		current = temp;
+	}
+	void clipBoardFunctions()
+	{
+		char c = _getch();
+		if (c == 99 || c == 67) // copy(c or C)
+		{
+			Copy();
+		}
+		else if (c == 120 || c == 88) // cut(x or X)
+		{
+			Cut();
+		}
+		else if (c == 118 || c == 86) // paste(v or V)
+		{
+			Paste();
+		}
+	}
+	void saveFile(string fileName)
+	{
+		Cell *temp = head;
+		ofstream fout(fileName);
+		fout << rowSize << endl;
+		fout << colSize << endl;
+		for (int i = 0; i < rowSize; i++)
+		{
+			Cell *temp2 = temp;
+			getch();
+			for (int j = 0; j < colSize; j++)
+			{
+				if (!intCheck(temp->data))
+				{
+					fout << " "
+						 << ",";
+				}
+				else
+				{
+					fout << temp->data << ",";
+				}
+
+				temp = temp->right;
+			}
+			fout << endl;
+			temp = temp2->down;
+		}
+		fout.close();
+	}
+
+	void saveFile()
+	{
+		system("cls");
+		string name;
+		cout << "Enter name of file : ";
+		cin >> name;
+		filename=name + ".txt";
+		saveFile(filename);
+
+	}
+	void loadFile(){
+		system("cls");
+		string name;
+		cout << "Enter name of file : ";
+		cin >> name;
+		filename=name + ".txt";
+		loadFile(filename);
+		system("cls");
+	}
+	void loadFile(string fileName)
+	{
+		ifstream fin(fileName);
+		fin >> rowSize;
+		fin >> colSize;
+
+		Cell *temp = head;
+
+		for (int i = 0; i < rowSize; i++)
+		{
+			Cell *temp2 = temp;
+			for (int j = 0; j < colSize; j++)
+			{
+				string cellData;
+				getline(fin, cellData, ',');
+
+				if (!intCheck(cellData))
+				{
+					temp->data = " ";
+				}
+				else
+				{
+					temp->data = cellData;
+				}
+
+				temp = temp->right;
+			}
+			temp = temp2->down;
+		}
+
+		fin.close();
+	}
+
 	void Keyboard()
 	{
 		printCell(currentRow, currentCol, 4);
@@ -1091,11 +1272,50 @@ public:
 			{
 				clearData();
 			}
-			else if (c == 13) // enter key
+
+			else if (c == 13) // enter key to select data range
 			{
 				selectRange();
-
+			}
+			// call clipboard functions
+			else if (c == 77 || c == 109) // m or M
 				mathematicalOperations();
+
+			else if (c == 88||c==120) // x
+				Copy();
+			else if (c == 89||c==121) // y
+			{
+				Cut();
+			}
+			else if (c == 90||c==122) // z
+			{
+				Paste();
+			}
+			else if(c==83||c==115)//ascii value for s or S	
+			{
+		
+				if(filename!=" ")
+				{
+					saveFile(filename);
+				}
+				else 
+				{
+					saveFile();
+					printGrid();
+					printData();
+				}
+			}
+			else if(c==76||c==108)// l or L
+			{
+				loadFile();
+				printGrid();
+				printData();
+			}
+			else if (c == 27) // escape key to exit
+			{
+				c = getch();
+				if (c == 27)
+					break;
 			}
 		}
 	}
