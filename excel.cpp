@@ -30,7 +30,7 @@ class Excel
 		Cell(string input = " ", Cell *l = nullptr, Cell *r = nullptr, Cell *u = nullptr, Cell *d = nullptr)
 		{
 
-			data = to_string(getRandomNumber());
+			data = to_string(0);
 			left = l;
 			right = r;
 			up = u;
@@ -655,7 +655,7 @@ public:
 		// clear data
 		while (temp != nullptr)
 		{
-			temp->data = "    ";
+			temp->data = "0";
 			temp = temp->down;
 		}
 	}
@@ -671,14 +671,14 @@ public:
 		// clear data
 		while (temp != nullptr)
 		{
-			temp->data = "    ";
+			temp->data = "0";
 			temp = temp->right;
 		}
 	}
 	// clear cell data
 	void clearCell()
 	{
-		current->data = "     ";
+		current->data = "0";
 	}
 	// print cells of the grid
 	void printGrid()
@@ -775,14 +775,14 @@ public:
 			printGrid();
 			printData();
 		}
-		else if (c == 86 || c == 118) // insert cell data (I or i)
+		else if (c == 86 || c == 118) // insert cell data (V or v)
 		{
 			inputCellData(currentRow, currentCol, current, 6);
 			printGrid();
 			printData();
 		}
 	}
-	// insert functions in excel call when D pressed
+	// delete functions in excel call when D pressed
 	void deleteFunctionsOfExcel()
 	{
 		char c = _getch();
@@ -835,7 +835,7 @@ public:
 			printData();
 		}
 	}
-
+	
 	// select cells for calculation
 	void selectRange()
 	{
@@ -848,6 +848,7 @@ public:
 			char c = _getch();
 			if (c == 100) // right(d)
 			{
+				
 				if (current->right != nullptr)
 				{
 					current = current->right;
@@ -856,6 +857,7 @@ public:
 			}
 			else if (c == 97) // left(a)
 			{
+
 				if (current->left != nullptr)
 				{
 					current = current->left;
@@ -864,6 +866,7 @@ public:
 			}
 			else if (c == 115) // down(s)
 			{
+				
 				if (current->down != nullptr)
 				{
 					current = current->down;
@@ -1117,7 +1120,7 @@ public:
 			for (int ci = 0; ci <= col_limit; ci++)
 			{
 				clip.push_back(temp->data);
-				temp->data = "        ";
+				temp->data = "0";
 				temp = temp->right;
 				printCellData(currentRow, currentCol, current, 6);
 			}
