@@ -1,0 +1,42 @@
+Insert Operations : 
+Press I+D to Insert a colomn to RIGHT of the current cell.
+Press I+A to Insert a colomn to LEFT of the current cell.
+Press I+W to Insert a ROW to UP of the current cell.
+Press I+S to Insert a ROW to DOWN of the current cell.
+Press I+R to Insert cell by RIGHT Shift.
+Press I+C to Insert cell by DOWN Shift.
+Press I+I to insert cell Data.
+
+Delete Operations:
+Press D+U to delete cell by up shift.
+Press D+L to delete cell by left shift.
+Press D+R to delete current row.
+Press D+C to delete current colomn.
+
+Clear Data:
+Press C+C to clear current Colomn.
+Press C+R to clear current Row.
+Press C+D to clear cell data.
+
+Select Range:
+Press Enter+D to move right
+Press Enter+A to move left
+Press Enter+W to move Up
+Press Enter+S to move Dowm
+Press Enter to exit (range selected)
+
+Mathematical Operations:
+Press M+S to get RangeSum
+Press M+A to get RangeAverage
+Press M+M to get RangeMaximum
+Press M+N to get RangeMinimum
+Press M+C to get RangeCount.
+(After this iterate for the cell to print data in which cell.
+ Press Enter to write Data or Escape to Cancel)
+
+Press S to save.
+Press L to load.
+Press X to copy.
+Press Y to Cut.
+Press Z to Paste.
+Press esc to exit.
